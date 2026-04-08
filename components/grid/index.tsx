@@ -4,7 +4,10 @@ function Grid(props: React.ComponentProps<"ul">) {
   return (
     <ul
       {...props}
-      className={clsx("grid grid-flow-row gap-4", props.className)}
+      className={clsx(
+        "grid grid-flow-row gap-x-5 gap-y-10 sm:gap-x-8 sm:gap-y-12 lg:gap-x-10 lg:gap-y-14",
+        props.className,
+      )}
     >
       {props.children}
     </ul>
@@ -13,10 +16,7 @@ function Grid(props: React.ComponentProps<"ul">) {
 
 function GridItem(props: React.ComponentProps<"li">) {
   return (
-    <li
-      {...props}
-      className={clsx("aspect-square transition-opacity", props.className)}
-    >
+    <li {...props} className={clsx("min-w-0 transition-opacity", props.className)}>
       {props.children}
     </li>
   );

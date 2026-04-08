@@ -33,6 +33,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Supabase CLI (linked project ref — optional to commit for teams)
+.supabase/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

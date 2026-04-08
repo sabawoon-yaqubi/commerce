@@ -1,45 +1,57 @@
-import { getCollectionProducts } from "lib/shopify";
+import { LuxuryProductCard } from "components/product/luxury-product-card";
+import { getCollectionProducts, getProducts } from "lib/store";
 import Link from "next/link";
-import { GridTileImage } from "./grid/tile";
 
 export async function Carousel() {
-  // Collections that start with `hidden-*` are hidden from the search page.
-  const products = await getCollectionProducts({
-    collection: "hidden-homepage-carousel",
-  });
+  const [carouselCollection, allProducts] = await Promise.all([
+    getCollectionProducts({
+      collection: "hidden-homepage-carousel",
+    }),
+    getProducts({}),
+  ]);
 
-  if (!products?.length) return null;
+  if (!carouselCollection?.length && !allProducts.length) return null;
 
-  // Purposefully duplicating products to make the carousel loop and not run out of products on wide screens.
-  const carouselProducts = [...products, ...products, ...products];
+  const seen = new Set<string>();
+  const carouselProducts = [...carouselCollection, ...allProducts].filter((product) => {
+    if (seen.has(product.id)) return false;
+    seen.add(product.id);
+    return true;
+  }).slice(0, 4);
+
+  if (carouselProducts.length < 3) return null;
 
   return (
-    <div className="w-full overflow-x-auto pb-6 pt-1">
-      <ul className="flex animate-carousel gap-4">
-        {carouselProducts.map((product, i) => (
-          <li
-            key={`${product.handle}${i}`}
-            className="relative aspect-square h-[30vh] max-h-[275px] w-2/3 max-w-[475px] flex-none md:w-1/3"
+    <section className="border-y border-black/[0.06] bg-white py-20 sm:py-28">
+      <div className="mx-auto max-w-screen-2xl px-5 sm:px-8 lg:px-10">
+        <div className="mb-12 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="font-display text-[clamp(1.75rem,3vw,2.35rem)] font-normal tracking-tight text-[#0c0c0c]">
+              In rotation
+            </h2>
+          </div>
+          <Link
+            href="/search"
+            className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#6b635a] underline-offset-4 transition-colors hover:text-[#0c0c0c] hover:underline"
           >
-            <Link
-              href={`/product/${product.handle}`}
-              className="relative h-full w-full"
+            View all
+          </Link>
+        </div>
+      </div>
+      <div className="w-full overflow-x-auto overflow-y-hidden pb-6 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto max-w-screen-2xl px-5 sm:px-8 lg:px-10">
+          <ul className="grid w-full min-w-[700px] grid-cols-2 gap-5 pb-2 sm:min-w-[920px] sm:grid-cols-3 sm:gap-8 lg:min-w-0 lg:grid-cols-4 lg:gap-10">
+          {carouselProducts.map((product, i) => (
+            <li
+              key={`${product.handle}-${i}`}
+              className="min-w-0"
             >
-              <GridTileImage
-                alt={product.title}
-                label={{
-                  title: product.title,
-                  amount: product.priceRange.maxVariantPrice.amount,
-                  currencyCode: product.priceRange.maxVariantPrice.currencyCode,
-                }}
-                src={product.featuredImage?.url}
-                fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-              />
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+              <LuxuryProductCard product={product} captionAlign="left" />
+            </li>
+          ))}
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }

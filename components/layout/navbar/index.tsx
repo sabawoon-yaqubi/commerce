@@ -1,61 +1,42 @@
 import CartModal from "components/cart/modal";
-import LogoSquare from "components/logo-square";
-import { getMenu } from "lib/shopify";
-import { Menu } from "lib/shopify/types";
+import { BRAND_NAME } from "lib/brand";
+import { getMenu } from "lib/store";
 import Link from "next/link";
 import { Suspense } from "react";
-import MobileMenu from "./mobile-menu";
+import SideMenu from "./side-menu";
+import NavbarWrapper from "./navbar-wrapper";
 import Search, { SearchSkeleton } from "./search";
-
-const { SITE_NAME } = process.env;
 
 export async function Navbar() {
   const menu = await getMenu("next-js-frontend-header-menu");
 
   return (
-    <nav className="relative flex items-center justify-between p-4 lg:px-6">
-      <div className="block flex-none md:hidden">
-        <Suspense fallback={null}>
-          <MobileMenu menu={menu} />
-        </Suspense>
-      </div>
-      <div className="flex w-full items-center">
-        <div className="flex w-full md:w-1/3">
-          <Link
-            href="/"
-            prefetch={true}
-            className="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
-          >
-            <LogoSquare />
-            <div className="ml-2 flex-none text-sm font-medium uppercase md:hidden lg:block">
-              {SITE_NAME}
-            </div>
-          </Link>
-          {menu.length ? (
-            <ul className="hidden gap-6 text-sm md:flex md:items-center">
-              {menu.map((item: Menu) => (
-                <li key={item.title}>
-                  <Link
-                    href={item.path}
-                    prefetch={true}
-                    className="text-neutral-500 underline-offset-4 hover:text-black hover:underline dark:text-neutral-400 dark:hover:text-neutral-300"
-                  >
-                    {item.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+    <NavbarWrapper>
+      <nav className="mx-auto flex h-[56px] max-w-screen-2xl items-center justify-between px-5 lg:h-[60px] lg:px-10">
+        <div className="flex min-w-0 flex-1 items-center justify-start">
+          <Suspense fallback={null}>
+            <SideMenu menu={menu} />
+          </Suspense>
         </div>
-        <div className="hidden justify-center md:flex md:w-1/3">
+
+        <div className="flex shrink-0 justify-center px-4">
+          <Link href="/" prefetch={true} className="text-center">
+            <span
+              className="font-display text-[clamp(1.05rem,2.5vw,1.35rem)] font-medium tracking-[0.18em] uppercase transition-colors duration-300"
+              style={{ color: "var(--nav-color)" }}
+            >
+              {BRAND_NAME}
+            </span>
+          </Link>
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 pl-2">
           <Suspense fallback={<SearchSkeleton />}>
             <Search />
           </Suspense>
-        </div>
-        <div className="flex justify-end md:w-1/3">
           <CartModal />
         </div>
-      </div>
-    </nav>
+      </nav>
+    </NavbarWrapper>
   );
 }
