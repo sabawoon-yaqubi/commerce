@@ -71,27 +71,37 @@ export const getCatalogProducts = cache(async (): Promise<Product[]> => {
   return list;
 });
 
-export async function getProductByHandle(handle: string): Promise<Product | undefined> {
+const getCatalogIndexes = cache(async () => {
   const products = await getCatalogProducts();
-  return products.find((p) => p.handle === handle);
+
+  const byHandle = new Map<string, Product>();
+  const byVariantId = new Map<string, { product: Product; variant: ProductVariant }>();
+
+  for (const product of products) {
+    byHandle.set(product.handle, product);
+
+    for (const variant of product.variants) {
+      byVariantId.set(variant.id, { product, variant });
+    }
+  }
+
+  return { products, byHandle, byVariantId };
+});
+
+export async function getProductByHandle(handle: string): Promise<Product | undefined> {
+  const { byHandle } = await getCatalogIndexes();
+  return byHandle.get(handle);
 }
 
 export async function lookupVariant(
   merchandiseId: string,
 ): Promise<{ product: Product; variant: ProductVariant } | undefined> {
-  const products = await getCatalogProducts();
-  for (const product of products) {
-    for (const variant of product.variants) {
-      if (variant.id === merchandiseId) {
-        return { product, variant };
-      }
-    }
-  }
-  return undefined;
+  const { byVariantId } = await getCatalogIndexes();
+  return byVariantId.get(merchandiseId);
 }
 
 export async function listProductsForCollection(handle: string): Promise<Product[]> {
-  const products = await getCatalogProducts();
+  const { products } = await getCatalogIndexes();
   const handles =
     handle === ""
       ? products.map((p) => p.handle)

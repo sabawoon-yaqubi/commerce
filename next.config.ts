@@ -6,6 +6,7 @@ export default {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400,
     // Allow product/catalog images from any HTTPS (or HTTP) origin — e.g. Amazon, CDNs, Supabase Storage, pasted URLs.
     // Local assets under /public still use paths like "/file.jpg" and do not need remotePatterns.
     remotePatterns: [

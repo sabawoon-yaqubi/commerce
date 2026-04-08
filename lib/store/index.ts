@@ -202,9 +202,13 @@ export async function getCart(): Promise<Cart | undefined> {
 
   const raw = (await cookies()).get(CART_COOKIE)?.value;
   if (!raw) return undefined;
-
-  const lines = await getSerializedLinesFromCookie();
-  return await buildCart(lines);
+  try {
+    const data = JSON.parse(raw) as { lines?: SerializedLine[] };
+    const lines = Array.isArray(data.lines) ? data.lines : [];
+    return await buildCart(lines);
+  } catch {
+    return undefined;
+  }
 }
 
 function productMatchesQuery(product: Product, q: string): boolean {
@@ -306,9 +310,12 @@ export async function getCheckoutRecommendations(cart: Cart): Promise<Product[]>
   const inCart = new Set(cart.lines.map((l) => l.merchandise.product.id));
   const seen = new Set<string>();
   const out: Product[] = [];
+  const uniqueIds = [...inCart];
+  const recommendationGroups = await Promise.all(
+    uniqueIds.map((id) => getProductRecommendations(id)),
+  );
 
-  for (const line of cart.lines) {
-    const recs = await getProductRecommendations(line.merchandise.product.id);
+  for (const recs of recommendationGroups) {
     for (const p of recs) {
       if (inCart.has(p.id) || seen.has(p.id)) continue;
       seen.add(p.id);

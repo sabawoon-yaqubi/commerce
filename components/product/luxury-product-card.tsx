@@ -112,7 +112,7 @@ export function LuxuryProductCard({
     return (
       <Link
         href={productHref}
-        prefetch={true}
+        prefetch={false}
         className={clsx("group block", cardFocusClassName)}
       >
         <div className={imageAreaClassName}>
@@ -161,7 +161,7 @@ export function LuxuryProductCard({
       <div className={imageAreaClassName}>
         <Link
           href={productHref}
-          prefetch={true}
+          prefetch={false}
           className="absolute inset-0 z-0 block outline-none"
           aria-label={`View ${product.title}`}
         >
@@ -191,7 +191,7 @@ export function LuxuryProductCard({
           />
         ) : null}
       </div>
-      <Link href={productHref} prefetch={true} className="block outline-none">
+      <Link href={productHref} prefetch={false} className="block outline-none">
         {caption}
       </Link>
     </div>
